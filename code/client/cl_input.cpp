@@ -522,6 +522,12 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		anglespeed = 0.001 * cls.frametime;
 	}
 
+	// Turn slower while zoomed in (a rifle scope), as CL_MouseMove does:
+	// the scale is the view angle divided by its normal size.
+	if ( cge && !UI_MenuActive() && cge->CG_SensitivityScale() >= 0.0 ) {
+		anglespeed *= cge->CG_SensitivityScale();
+	}
+
 	if ( !in_strafe.active ) {
 		cl.viewangles[YAW] += anglespeed * yaw;
 		cmd->rightmove = ClampChar( cmd->rightmove + (int)right );
