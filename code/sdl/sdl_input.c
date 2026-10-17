@@ -50,6 +50,7 @@ static cvar_t *in_nograb;
 
 static cvar_t *in_joystick          = NULL;
 static cvar_t *in_joystickThreshold = NULL;
+static cvar_t *in_joystickTriggerThreshold = NULL;
 static cvar_t *in_joystickNo        = NULL;
 static cvar_t *in_joystickUseAnalog = NULL;
 
@@ -694,9 +695,11 @@ static void IN_GamepadMove( void )
 	{
 		int axis = SDL_GameControllerGetAxis(gamepad, SDL_CONTROLLER_AXIS_LEFTX + i);
 		int oldAxis = stick_state.oldaaxes[i];
+		qboolean isTrigger = i == SDL_CONTROLLER_AXIS_TRIGGERLEFT || i == SDL_CONTROLLER_AXIS_TRIGGERRIGHT;
+		float threshold = isTrigger ? in_joystickTriggerThreshold->value : in_joystickThreshold->value;
 
 		// Smoothly ramp from dead zone to maximum value
-		float f = ((float)abs(axis) / 32767.0f - in_joystickThreshold->value) / (1.0f - in_joystickThreshold->value);
+		float f = ((float)abs(axis) / 32767.0f - threshold) / (1.0f - threshold);
 
 		if (f < 0.0f)
 			f = 0.0f;
@@ -1279,6 +1282,9 @@ void IN_Init( void *windowData )
 
 	in_joystick = Cvar_Get( "in_joystick", "0", CVAR_ARCHIVE|CVAR_LATCH );
 	in_joystickThreshold = Cvar_Get( "joy_threshold", "0.15", CVAR_ARCHIVE );
+	// Dead zone of the two triggers. Some controllers report a trigger as
+	// half pressed at rest, so it can be set higher than joy_threshold.
+	in_joystickTriggerThreshold = Cvar_Get( "joy_triggerThreshold", "0.15", CVAR_ARCHIVE );
 
 #if defined(PROTOCOL_HANDLER) && defined(__APPLE__)
 	SDL_EventState( SDL_DROPFILE, SDL_ENABLE );
