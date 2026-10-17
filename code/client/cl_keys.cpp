@@ -1130,7 +1130,8 @@ void CL_KeyEvent(int key, qboolean down, unsigned time)
 
     if (key == K_ENTER) {
         if (down) {
-            if (keys[K_ALT].down) {
+            // Alt+Enter, and Cmd+Enter on macOS (the Mac key for full screen)
+            if (keys[K_ALT].down || keys[K_COMMAND].down) {
                 Key_ClearStates();
                 Cvar_SetValue("r_fullscreen", !Cvar_VariableIntegerValue("r_fullscreen"));
                 return;
