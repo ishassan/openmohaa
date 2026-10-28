@@ -3729,8 +3729,9 @@ void Player::SetMoveInfo(pmove_t *pm, usercmd_t *ucmd)
         if (g_gametype->integer != GT_SINGLE_PLAYER) {
             pm->leanMax = 40.f;
         } else {
-            // Don't allow lean in single-player, like in the original game
-            pm->leanMax = 0;
+            // Don't allow lean in single-player, like in the original game,
+            // unless g_singlePlayerLean is set (added in our fork)
+            pm->leanMax = g_singlePlayerLean->integer ? 40.f : 0;
         }
 
         pm->leanAdd          = 10.f;

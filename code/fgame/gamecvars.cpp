@@ -57,6 +57,7 @@ cvar_t *sv_gravity;
 cvar_t *sv_rollspeed;
 cvar_t *sv_rollangle;
 cvar_t *sv_cheats;
+cvar_t *g_singlePlayerLean;
 cvar_t *sv_showbboxes;
 cvar_t *sv_showtags;
 
@@ -366,6 +367,8 @@ void CVAR_Init(void)
     sv_waterspeed    = gi.Cvar_Get("sv_waterspeed", "400", 0);
 
     sv_cheats    = gi.Cvar_Get("cheats", "0", CVAR_USERINFO | CVAR_SERVERINFO | CVAR_LATCH);
+    // Added in our fork: 1 allows lean in Allied Assault single player
+    g_singlePlayerLean = gi.Cvar_Get("g_singlePlayerLean", "0", CVAR_ARCHIVE);
     sv_fps       = gi.Cvar_Get("sv_fps", "20", CVAR_SAVEGAME);
     sv_cinematic = gi.Cvar_Get("sv_cinematic", "0", CVAR_ROM);
 
