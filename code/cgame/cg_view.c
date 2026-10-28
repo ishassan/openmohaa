@@ -503,8 +503,11 @@ static int CG_CalcFov(void)
     //  cg_aimSensitivity. Not in a scope (the scope has its own zoom), and
     //  not in a cut scene. A gun on a vehicle also uses a camera view, but
     //  with PMF_TURRET, and there the player aims, so aim mode stays on.
+    //  Turrets also set the zoom stat, to 80: only a zoom of 30 or less is
+    //  a scope (the same limit as the scope overlay in cg_drawtools).
     //
-    if (cg.predicted_player_state.stats[STAT_INZOOM] || (cg.snap->ps.pm_flags & PMF_INTERMISSION)
+    if ((cg.predicted_player_state.stats[STAT_INZOOM] && cg.predicted_player_state.stats[STAT_INZOOM] <= 30)
+        || (cg.snap->ps.pm_flags & PMF_INTERMISSION)
         || ((cg.snap->ps.pm_flags & PMF_CAMERA_VIEW) && !(cg.snap->ps.pm_flags & PMF_TURRET))) {
         aimFraction = 0;
     } else {
@@ -552,6 +555,10 @@ static int CG_CalcFov(void)
     cg.fRefFovYSin     = sin(fov_y / 114.0f);
     cg.zoomSensitivity = cg.refdef.fov_y / 75.0;
     cg.zoomSensitivity *= 1 + (cg_aimSensitivity->value - 1) * aimFraction;
+    // Added in our fork: an extra turn speed factor in a scope
+    if (cg.predicted_player_state.stats[STAT_INZOOM] && cg.predicted_player_state.stats[STAT_INZOOM] <= 30) {
+        cg.zoomSensitivity *= cg_scopeSensitivity->value;
+    }
     return inwater;
 }
 
