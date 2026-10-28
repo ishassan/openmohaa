@@ -485,6 +485,7 @@ Fixed fov at intermissions, otherwise account for fov variable and zooms.
 
 static int CG_CalcFov(void)
 {
+    static float aimFraction; // 0 = no aim, 1 = full aim zoom
     float x;
     float phase;
     float v;
@@ -492,12 +493,36 @@ static int CG_CalcFov(void)
     float fov_x, fov_y;
     int   inwater;
     float fov_ratio;
+    float camera_fov;
+    float aimStep;
+
+    //
+    // Added in our fork
+    //  Aim mode: while the aim button is held (cl_aim, set by the client),
+    //  zoom to cg_aimFov in cg_aimTime milliseconds and turn slower by
+    //  cg_aimSensitivity. Not in a scope (the scope has its own zoom), and
+    //  not in a cut scene.
+    //
+    if (cg.predicted_player_state.stats[STAT_INZOOM] || (cg.snap->ps.pm_flags & (PMF_CAMERA_VIEW | PMF_INTERMISSION))) {
+        aimFraction = 0;
+    } else {
+        aimStep = cg_aimTime->value > 0 ? cg.frametime / cg_aimTime->value : 1;
+        if (cl_aim->integer) {
+            aimFraction = Q_min(aimFraction + aimStep, 1);
+        } else {
+            aimFraction = Q_max(aimFraction - aimStep, 0);
+        }
+    }
+    camera_fov = cg.camera_fov;
+    if (cg_aimFov->value > 0 && cg_aimFov->value < camera_fov) {
+        camera_fov += (cg_aimFov->value - camera_fov) * aimFraction;
+    }
 
     fov_ratio = (float)cg.refdef.width / (float)cg.refdef.height * (3.0 / 4.0);
     if (fov_ratio == 1) {
-        fov_x = cg.camera_fov;
+        fov_x = camera_fov;
     } else {
-        fov_x = RAD2DEG(atan(tan(DEG2RAD(cg.camera_fov / 2.0)) * fov_ratio)) * 2.0;
+        fov_x = RAD2DEG(atan(tan(DEG2RAD(camera_fov / 2.0)) * fov_ratio)) * 2.0;
     }
 
     x = cg.refdef.width / tan(fov_x / 360 * M_PI);
@@ -524,6 +549,7 @@ static int CG_CalcFov(void)
     cg.fRefFovYCos     = cos(fov_y / 114.0f);
     cg.fRefFovYSin     = sin(fov_y / 114.0f);
     cg.zoomSensitivity = cg.refdef.fov_y / 75.0;
+    cg.zoomSensitivity *= 1 + (cg_aimSensitivity->value - 1) * aimFraction;
     return inwater;
 }
 

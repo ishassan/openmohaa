@@ -512,6 +512,10 @@ extern "C" {
     // Added in OPM
     //
     extern cvar_t *cg_fov;
+    extern cvar_t *cg_aimFov;
+    extern cvar_t *cg_aimSensitivity;
+    extern cvar_t *cg_aimTime;
+    extern cvar_t *cl_aim;
     extern cvar_t *cg_cheats;
 
     //
