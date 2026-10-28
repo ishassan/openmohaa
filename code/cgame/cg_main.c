@@ -118,6 +118,7 @@ cvar_t *ui_timemessage;
 cvar_t *cg_fov;
 cvar_t *cg_aimFov;
 cvar_t *cg_aimSensitivity;
+cvar_t *cg_scopeSensitivity;
 cvar_t *cg_aimTime;
 cvar_t *cl_aim;
 cvar_t *cg_cheats;
@@ -221,6 +222,7 @@ void CG_RegisterCvars(void)
     cg_fov = cgi.Cvar_Get("cg_fov", "80", CVAR_ARCHIVE);
     cg_aimFov = cgi.Cvar_Get("cg_aimFov", "55", CVAR_ARCHIVE);
     cg_aimSensitivity = cgi.Cvar_Get("cg_aimSensitivity", "0.6", CVAR_ARCHIVE);
+    cg_scopeSensitivity = cgi.Cvar_Get("cg_scopeSensitivity", "1", CVAR_ARCHIVE);
     cg_aimTime = cgi.Cvar_Get("cg_aimTime", "150", CVAR_ARCHIVE);
     cl_aim = cgi.Cvar_Get("cl_aim", "0", 0);
     cg_cheats = cgi.Cvar_Get("cheats", "0", CVAR_USERINFO | CVAR_SERVERINFO | CVAR_LATCH);
