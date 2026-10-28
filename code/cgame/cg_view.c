@@ -501,9 +501,11 @@ static int CG_CalcFov(void)
     //  Aim mode: while the aim button is held (cl_aim, set by the client),
     //  zoom to cg_aimFov in cg_aimTime milliseconds and turn slower by
     //  cg_aimSensitivity. Not in a scope (the scope has its own zoom), and
-    //  not in a cut scene.
+    //  not in a cut scene. A gun on a vehicle also uses a camera view, but
+    //  with PMF_TURRET, and there the player aims, so aim mode stays on.
     //
-    if (cg.predicted_player_state.stats[STAT_INZOOM] || (cg.snap->ps.pm_flags & (PMF_CAMERA_VIEW | PMF_INTERMISSION))) {
+    if (cg.predicted_player_state.stats[STAT_INZOOM] || (cg.snap->ps.pm_flags & PMF_INTERMISSION)
+        || ((cg.snap->ps.pm_flags & PMF_CAMERA_VIEW) && !(cg.snap->ps.pm_flags & PMF_TURRET))) {
         aimFraction = 0;
     } else {
         aimStep = cg_aimTime->value > 0 ? cg.frametime / cg_aimTime->value : 1;
