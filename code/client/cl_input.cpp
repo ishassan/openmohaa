@@ -62,6 +62,16 @@ kbutton_t	in_voiprecord;
 
 kbutton_t	in_buttons[16];
 
+// Aim mode (hold "+aim"): cl_aim tells the cgame to zoom in a little and turn
+// slower, and "aimzoom" tells the game to open the scope of a weapon that has one.
+kbutton_t	in_aim;
+cvar_t		*cl_aim;
+
+// Response curve of the stick turn: the stick value (0 to 1) to this power.
+// 1 is a straight line; above 1, a small push turns much slower and a full
+// push turns at the same speed.
+cvar_t		*j_curve;
+
 qboolean	in_mlooking;
 
 void IN_ToggleMouse( void ) {
@@ -256,6 +266,35 @@ void IN_LeanLeftDown(void) { IN_KeyDown(&in_buttons[4]); }
 void IN_LeanLeftUp(void) { IN_KeyUp(&in_buttons[4]); }
 void IN_LeanRightDown(void) { IN_KeyDown(&in_buttons[5]); }
 void IN_LeanRightUp(void) { IN_KeyUp(&in_buttons[5]); }
+
+static void IN_AimChanged(qboolean wasActive) {
+	if (in_aim.active == wasActive) {
+		return;
+	}
+	Cvar_Set("cl_aim", in_aim.active ? "1" : "0");
+	if (clc.state == CA_ACTIVE) {
+		CL_AddReliableCommand(in_aim.active ? "aimzoom 1" : "aimzoom 0", qfalse);
+	}
+}
+void IN_AimDown(void) { qboolean wasActive = in_aim.active; IN_KeyDown(&in_aim); IN_AimChanged(wasActive); }
+void IN_AimUp(void) { qboolean wasActive = in_aim.active; IN_KeyUp(&in_aim); IN_AimChanged(wasActive); }
+
+/*
+=================
+CL_JoystickCurve
+
+Applies j_curve to one stick value (-32767 to 32767).
+=================
+*/
+static float CL_JoystickCurve(float value) {
+	float f = fabs(value) / 32767.0f;
+
+	if (j_curve->value <= 1.0f || f <= 0.0f) {
+		return value;
+	}
+	f = 32767.0f * pow(f, j_curve->value);
+	return value < 0 ? -f : f;
+}
 
 void IN_SpeedDown(void) {IN_KeyDown(&in_speed);}
 void IN_SpeedUp(void) {IN_KeyUp(&in_speed);}
@@ -506,10 +545,10 @@ CL_JoystickMove
 void CL_JoystickMove( usercmd_t *cmd ) {
 	float	anglespeed;
 
-	float yaw     = j_yaw->value     * cl.joystickAxis[j_yaw_axis->integer];
+	float yaw     = j_yaw->value     * CL_JoystickCurve(cl.joystickAxis[j_yaw_axis->integer]);
 	float right   = j_side->value    * cl.joystickAxis[j_side_axis->integer];
 	float forward = j_forward->value * cl.joystickAxis[j_forward_axis->integer];
-	float pitch   = j_pitch->value   * cl.joystickAxis[j_pitch_axis->integer];
+	float pitch   = j_pitch->value   * CL_JoystickCurve(cl.joystickAxis[j_pitch_axis->integer]);
 	float up      = j_up->value      * cl.joystickAxis[j_up_axis->integer];
 
 	if ( in_speed.active ^ cl_run->integer ) {
@@ -1176,6 +1215,8 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand("-leanright", IN_LeanRightUp);
 	Cmd_AddCommand("+speed", IN_SpeedDown);
 	Cmd_AddCommand("-speed", IN_SpeedUp);
+	Cmd_AddCommand("+aim", IN_AimDown);
+	Cmd_AddCommand("-aim", IN_AimUp);
 	Cmd_AddCommand("+button0", IN_Button0Down);
 	Cmd_AddCommand("-button0", IN_Button0Up);
 	Cmd_AddCommand("+button1", IN_Button1Down);
@@ -1216,6 +1257,8 @@ void CL_InitInput( void ) {
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
+	cl_aim = Cvar_Get ("cl_aim", "0", 0);
+	j_curve = Cvar_Get ("j_curve", "1", CVAR_ARCHIVE);
 }
 
 /*
@@ -1251,6 +1294,8 @@ void CL_ShutdownInput(void)
 	Cmd_RemoveCommand("-moveright");
 	Cmd_RemoveCommand("+speed");
 	Cmd_RemoveCommand("-speed");
+	Cmd_RemoveCommand("+aim");
+	Cmd_RemoveCommand("-aim");
 	Cmd_RemoveCommand("+attack");
 	Cmd_RemoveCommand("-attack");
 	Cmd_RemoveCommand("+button0");

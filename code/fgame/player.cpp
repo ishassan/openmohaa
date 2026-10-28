@@ -595,6 +595,16 @@ Event EV_Player_SafeZoom
     "0 turns off zoom,"
     "and 1 returns zoom to previous setting"
 );
+Event EV_Player_AimZoom
+(
+    "aimzoom",
+    EV_CONSOLE,
+    "b",
+    "zoom",
+    "Added in our fork. The client sends it when the aim button is pressed (1) or released (0): "
+    "it opens or closes the zoom of a weapon that has one (a scope)",
+    EV_NORMAL
+);
 Event EV_Player_ZoomOff
 (
     "zoomoff",
@@ -1837,6 +1847,7 @@ CLASS_DECLARATION(Sentient, Player, "player") {
     {&EV_Player_SafeHolster,              &Player::Holster                      },
     {&EV_Player_SafeZoom,                 &Player::SafeZoomed                   },
     {&EV_Player_ZoomOff,                  &Player::ZoomOffEvent                 },
+    {&EV_Player_AimZoom,                  &Player::AimZoomEvent                 },
     {&EV_Player_StartUseObject,           &Player::StartUseObject               },
     {&EV_Player_FinishUseObject,          &Player::FinishUseObject              },
     {&EV_Player_WatchActor,               &Player::WatchActor                   },
@@ -8428,6 +8439,19 @@ void Player::ZoomOff(void)
 void Player::ZoomOffEvent(Event *ev)
 {
     ZoomOff();
+}
+
+void Player::AimZoomEvent(Event *ev)
+{
+    Weapon *weapon = GetActiveWeapon(WEAPON_MAIN);
+
+    if (level.intermissiontime || !weapon || !weapon->GetZoom()) {
+        return;
+    }
+
+    if (ev->GetBoolean(1) != (IsZoomed() != qfalse)) {
+        ToggleZoom(weapon->GetZoom());
+    }
 }
 
 qboolean Player::IsZoomed(void)

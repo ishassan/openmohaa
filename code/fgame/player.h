@@ -730,6 +730,7 @@ public:
     void     ToggleZoom(int iZoom);
     void     ZoomOff(void);
     void     ZoomOffEvent(Event *ev);
+    void     AimZoomEvent(Event *ev);
     qboolean IsZoomed(void);
     void     SafeZoomed(Event *ev);
     void     DumpState(Event *ev);
