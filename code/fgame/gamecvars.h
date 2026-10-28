@@ -62,6 +62,7 @@ extern cvar_t *sv_gravity;
 extern cvar_t *sv_rollspeed;
 extern cvar_t *sv_rollangle;
 extern cvar_t *sv_cheats;
+extern cvar_t *g_singlePlayerLean;
 extern cvar_t *sv_showbboxes;
 extern cvar_t *sv_showtags;
 

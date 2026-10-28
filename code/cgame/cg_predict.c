@@ -518,8 +518,9 @@ void CG_PredictPlayerState(void)
         if (cgs.gametype != GT_SINGLE_PLAYER) {
             cg_pmove.leanMax = 40.f;
         } else {
-            // Don't allow lean in single-player, like in the original game
-            cg_pmove.leanMax = 0;
+            // Don't allow lean in single-player, like in the original game,
+            // unless g_singlePlayerLean is set (added in our fork)
+            cg_pmove.leanMax = cg_singlePlayerLean->integer ? 40.f : 0;
         }
 
         cg_pmove.leanAdd = 10.f;
